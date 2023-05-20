@@ -3,13 +3,15 @@
 # SPDX-FileContributor: Adrian "asie" Siekierka, 2023
 
 WONDERFUL_TOOLCHAIN ?= /opt/wonderful
-TARGET = wswan/medium
+TARGET = wwitch
 include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
 
 # Metadata
 # --------
 
 NAME		:= example
+INFO		:= Example!
+WF_CRT0		:= $(WF_CRT0_JPN2)
 
 # Source code paths
 # -----------------
@@ -26,7 +28,7 @@ DEFINES		:=
 # Libraries
 # ---------
 
-LIBS		:= -lwsx -lws
+LIBS		:= -lwsx -lww
 LIBDIRS		:= $(WF_TARGET_DIR)
 
 # Build artifacts
@@ -35,7 +37,7 @@ LIBDIRS		:= $(WF_TARGET_DIR)
 BUILDDIR	:= build
 ELF		:= build/$(NAME).elf
 MAP		:= build/$(NAME).map
-ROM		:= $(NAME).wsc
+EXECUTABLE	:= $(NAME).fx
 
 # Verbose flag
 # ------------
@@ -70,10 +72,20 @@ ASFLAGS		+= -x assembler-with-cpp $(DEFINES) $(WF_ARCH_CFLAGS) \
 		   $(INCLUDEFLAGS) -ffunction-sections -fdata-sections
 
 CFLAGS		+= -std=gnu11 $(WARNFLAGS) $(DEFINES) $(WF_ARCH_CFLAGS) \
-		   $(INCLUDEFLAGS) -ffunction-sections -fdata-sections -O2
+		   $(INCLUDEFLAGS) -ffunction-sections -fdata-sections -Os
 
-LDFLAGS		:= $(LIBDIRSFLAGS) -Wl,-Map,$(MAP) -Wl,--gc-sections \
+LDFLAGS		:= -T$(WF_LDSCRIPT) \
+		   $(LIBDIRSFLAGS) -Wl,-Map,$(MAP) -Wl,--gc-sections \
 		   $(WF_ARCH_LDFLAGS) $(LIBS)
+
+MKFENTFLAGS	:=
+
+ifdef INFO
+MKFENTFLAGS	+= --info $(INFO)
+endif
+ifdef RESOURCE
+MKFENTFLAGS	+= --resource $(RESOURCE)
+endif
 
 # Intermediate build files
 # ------------------------
@@ -94,15 +106,19 @@ DEPS		:= $(OBJS:.o=.d)
 
 .PHONY: all clean
 
-all: $(ROM)
+all: $(EXECUTABLE)
 
-$(ROM) $(ELF): $(OBJS)
-	@echo "  ROMLINK $@"
-	$(_V)$(ROMLINK) -v -o $@ --output-elf $(ELF) -- $(OBJS) $(WF_CRT0) $(LDFLAGS)
+$(EXECUTABLE): $(ELF)
+	@echo "  MKFENT  $@"
+	$(_V)$(MKFENT) -v -o $@ -s $< $(MKFENTFLAGS)
+
+$(ELF): $(OBJS)
+	@echo "  LD      $@"
+	$(_V)$(CC) -o $@ $(OBJS) $(WF_CRT0) $(LDFLAGS)
 
 clean:
 	@echo "  CLEAN"
-	$(_V)$(RM) $(ROM) $(BUILDDIR)
+	$(_V)$(RM) $(EXECUTABLE) $(BUILDDIR)
 
 # Rules
 # -----
