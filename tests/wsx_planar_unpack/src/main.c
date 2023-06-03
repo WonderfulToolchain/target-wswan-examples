@@ -20,6 +20,11 @@ static void draw_smileys_on_screen(int count) {
 	}
 }
 
+static void wait_for_keypress(uint16_t mask) {
+	while(ws_keypad_scan() != mask);
+	while(ws_keypad_scan() != 0);
+}
+
 void main(void) {
 	// Initialize display palette.
 	ws_display_set_shade_lut(SHADE_LUT_DEFAULT);
@@ -28,15 +33,25 @@ void main(void) {
 	// Unpack tiles.
 	memset(MEM_TILE(0), 0, 16);
 	for (int i = 0; i < 3; i++) {
-		wsx_planar_unpack(MEM_TILE(i + 1), 8, smiley, WSX_PLANAR_UNPACK_MODE_1BPP_2BPP_ZERO(i));
+		wsx_planar_unpack(MEM_TILE(i + 1), 8, smiley, WSX_PLANAR_UNPACK_1BPP_TO_2BPP_ZERO(i));
 	}
-
 	draw_smileys_on_screen(3);
 
 	// Enable display.
 	outportw(IO_DISPLAY_CTRL, DISPLAY_SCR1_ENABLE);
 
-	while(ws_keypad_scan() != KEY_A);
+	wait_for_keypress(KEY_A);
+
+	outportw(IO_DISPLAY_CTRL, 0);
+
+	for (int i = 0; i < 16; i++) {
+		wsx_planar_unpack(MEM_TILE(i), 8, smiley, WSX_PLANAR_UNPACK_1BPP_TO_2BPP(i, 0));
+	}
+	draw_smileys_on_screen(15);
+
+	outportw(IO_DISPLAY_CTRL, DISPLAY_SCR1_ENABLE);
+
+	wait_for_keypress(KEY_A);
 
 	if (ws_system_is_color()) {
 		outportw(IO_DISPLAY_CTRL, 0);
@@ -50,7 +65,7 @@ void main(void) {
 		// Unpack tiles.
 		memset(MEM_TILE_4BPP(0), 0, 32);
 		for (int i = 0; i < 15; i++) {
-			wsx_planar_unpack(MEM_TILE_4BPP(i + 1), 8, smiley, WSX_PLANAR_UNPACK_MODE_1BPP_4BPP_ZERO(i));
+			wsx_planar_unpack(MEM_TILE_4BPP(i + 1), 8, smiley, WSX_PLANAR_UNPACK_1BPP_TO_4BPP_ZERO(i));
 		}
 
 		draw_smileys_on_screen(15);
