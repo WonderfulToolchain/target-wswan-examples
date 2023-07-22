@@ -136,7 +136,7 @@ $(BUILDDIR)/%.c.o : %.c
 $(BUILDDIR)/%.bin.o $(BUILDDIR)/%_bin.h : %.bin
 	@echo "  BIN2C   $<"
 	@$(MKDIR) -p $(@D)
-	$(_V)$(WF)/bin/wf-bin2c -a 2 --address-space __far $(@D) $<
+	$(_V)$(WF)/bin/wf-bin2c -a 2 $(@D) $<
 	$(_V)$(CC) $(CFLAGS) -MMD -MP -c -o $(BUILDDIR)/$*.bin.o $(BUILDDIR)/$*_bin.c
 
 # Include dependency files if they exist
