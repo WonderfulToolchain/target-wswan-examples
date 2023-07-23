@@ -114,7 +114,7 @@ compile_commands.json: $(OBJS) | Makefile
 $(BUILDDIR)/%.s.o : %.s
 	@echo "  AS      $<"
 	@$(MKDIR) -p $(@D)
-	$(_V)$(CC) $(ASFLAGS) -MMD -MP -c -o $@ $<
+	$(_V)$(CC) $(ASFLAGS) -MMD -MP -MJ $(patsubst %.o,%.cc.json,$@) -c -o $@ $<
 
 $(BUILDDIR)/%.c.o : %.c
 	@echo "  CC      $<"
