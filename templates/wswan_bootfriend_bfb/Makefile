@@ -62,7 +62,7 @@ SOURCES_C	:= $(shell find -L $(SOURCEDIRS) -name "*.c")
 WARNFLAGS	:= -Wall
 
 INCLUDEFLAGS	:= $(foreach path,$(INCLUDEDIRS),-I$(path)) \
-		   $(foreach path,$(LIBDIRS),-I$(path)/include)
+		   $(foreach path,$(LIBDIRS),-isystem $(path)/include)
 
 LIBDIRSFLAGS	:= $(foreach path,$(LIBDIRS),-L$(path)/lib)
 
@@ -95,7 +95,7 @@ DEPS		:= $(OBJS:.o=.d)
 
 .PHONY: all clean
 
-all: $(EXECUTABLE)
+all: $(EXECUTABLE) compile_commands.json
 
 $(EXECUTABLE): $(ELF)
 	@echo "  OBJCOPY $@"
@@ -109,6 +109,10 @@ clean:
 	@echo "  CLEAN"
 	$(_V)$(RM) $(EXECUTABLE) $(BUILDDIR)
 
+compile_commands.json: $(OBJS) | Makefile
+	@echo "  MERGE   compile_commands.json"
+	$(_V)$(WF)/bin/wf-compile-commands-merge $@ $(patsubst %.o,%.cc.json,$^)
+
 # Rules
 # -----
 
@@ -120,7 +124,7 @@ $(BUILDDIR)/%.s.o : %.s
 $(BUILDDIR)/%.c.o : %.c
 	@echo "  CC      $<"
 	@$(MKDIR) -p $(@D)
-	$(_V)$(CC) $(CFLAGS) -MMD -MP -c -o $@ $<
+	$(_V)$(CC) $(CFLAGS) -MMD -MP -MJ $(patsubst %.o,%.cc.json,$@) -c -o $@ $<
 
 $(BUILDDIR)/%.bin.o $(BUILDDIR)/%_bin.h : %.bin
 	@echo "  BIN2C   $<"
