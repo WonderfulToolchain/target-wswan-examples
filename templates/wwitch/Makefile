@@ -9,8 +9,12 @@ include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
 # Metadata
 # --------
 
+# The FreyaOS filename.
 NAME		:= example
-INFO		:= Example!
+
+# The FreyaOS user-friendly filename.
+INFO		:= $(NAME)
+
 WF_CRT0		:= $(WF_CRT0_JPN2)
 
 # Source code paths
