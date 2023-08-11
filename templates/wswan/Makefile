@@ -16,6 +16,7 @@ NAME		:= example
 
 INCLUDEDIRS	:= include
 SOURCEDIRS	:= src
+ASSETDIRS	:= assets
 CBINDIRS	:= cbin
 
 # Defines passed to all files
@@ -49,6 +50,10 @@ endif
 # Source files
 # ------------
 
+ifneq ($(ASSETDIRS),)
+    SOURCES_WFPROCESS	:= $(shell find -L $(ASSETDIRS) -name "*.lua")
+    INCLUDEDIRS		+= $(addprefix $(BUILDDIR)/,$(ASSETDIRS))
+endif
 ifneq ($(CBINDIRS),)
     SOURCES_CBIN	:= $(shell find -L $(CBINDIRS) -name "*.bin")
     INCLUDEDIRS		+= $(addprefix $(BUILDDIR)/,$(CBINDIRS))
@@ -78,9 +83,8 @@ LDFLAGS		:= $(LIBDIRSFLAGS) -Wl,-Map,$(MAP) -Wl,--gc-sections \
 # Intermediate build files
 # ------------------------
 
-OBJS_ASSETS	:= $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_CBIN)))
-
-HEADERS_ASSETS	:= $(patsubst %.bin,%_bin.h,$(addprefix $(BUILDDIR)/,$(SOURCES_CBIN)))
+OBJS_ASSETS	:= $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_CBIN))) \
+		   $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_WFPROCESS)))
 
 OBJS_SOURCES	:= $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_S))) \
 		   $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_C)))
@@ -102,7 +106,7 @@ $(ROM) $(ELF): $(OBJS)
 
 clean:
 	@echo "  CLEAN"
-	$(_V)$(RM) $(ROM) $(BUILDDIR)
+	$(_V)$(RM) $(ROM) $(BUILDDIR) compile_commands.json
 
 compile_commands.json: $(OBJS) | Makefile
 	@echo "  MERGE   compile_commands.json"
@@ -126,6 +130,12 @@ $(BUILDDIR)/%.bin.o $(BUILDDIR)/%_bin.h : %.bin
 	@$(MKDIR) -p $(@D)
 	$(_V)$(WF)/bin/wf-bin2c -a 2 --address-space __far $(@D) $<
 	$(_V)$(CC) $(CFLAGS) -MMD -MP -c -o $(BUILDDIR)/$*.bin.o $(BUILDDIR)/$*_bin.c
+
+$(BUILDDIR)/%.lua.o : %.lua
+	@echo "  PROCESS $<"
+	@$(MKDIR) -p $(@D)
+	$(_V)$(WF)/bin/wf-process -o $(BUILDDIR)/$*.c -t $(TARGET) -D $<
+	$(_V)$(CC) $(CFLAGS) -MMD -MP -c -o $(BUILDDIR)/$*.lua.o $(BUILDDIR)/$*.c
 
 # Include dependency files if they exist
 # --------------------------------------

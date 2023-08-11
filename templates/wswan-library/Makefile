@@ -11,6 +11,7 @@ include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
 
 INCLUDEDIRS	:= include
 SOURCEDIRS	:= src
+ASSETDIRS	:= assets
 
 # Defines passed to all files
 # ---------------------------
@@ -41,6 +42,10 @@ endif
 # Source files
 # ------------
 
+ifneq ($(ASSETDIRS),)
+    SOURCES_WFPROCESS	:= $(shell find -L $(ASSETDIRS) -name "*.lua")
+    INCLUDEDIRS		+= $(addprefix $(BUILDDIR)/,$(ASSETDIRS))
+endif
 SOURCES_S	:= $(shell find -L $(SOURCEDIRS) -name "*.s")
 SOURCES_C	:= $(shell find -L $(SOURCEDIRS) -name "*.c")
 
@@ -61,10 +66,12 @@ CFLAGS		+= -std=gnu11 $(WARNFLAGS) $(DEFINES) $(WF_ARCH_CFLAGS) \
 # Intermediate build files
 # ------------------------
 
+OBJS_ASSETS	:= $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_WFPROCESS)))
+
 OBJS_SOURCES	:= $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_S))) \
 		   $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_C)))
 
-OBJS		:= $(OBJS_SOURCES)
+OBJS		:= $(OBJS_ASSETS) $(OBJS_SOURCES)
 
 DEPS		:= $(OBJS:.o=.d)
 
@@ -82,7 +89,7 @@ $(ARCHIVE): $(OBJS)
 
 clean:
 	@echo "  CLEAN"
-	$(_V)$(RM) $(ARCHIVE) $(BUILDDIR)
+	$(_V)$(RM) $(ARCHIVE) $(BUILDDIR) compile_commands.json
 
 compile_commands.json: $(OBJS) | Makefile
 	@echo "  MERGE   compile_commands.json"
@@ -108,6 +115,12 @@ $(BUILDDIR)/%.c.o : %.c
 	@echo "  CC      $<"
 	@$(MKDIR) -p $(@D)
 	$(_V)$(CC) $(CFLAGS) -MMD -MP -MJ $(patsubst %.o,%.cc.json,$@) -c -o $@ $<
+
+$(BUILDDIR)/%.lua.o : %.lua
+	@echo "  PROCESS $<"
+	@$(MKDIR) -p $(@D)
+	$(_V)$(WF)/bin/wf-process -o $(BUILDDIR)/$*.c -t $(TARGET) -D $<
+	$(_V)$(CC) $(CFLAGS) -MMD -MP -c -o $(BUILDDIR)/$*.lua.o $(BUILDDIR)/$*.c
 
 # Include dependency files if they exist
 # --------------------------------------
