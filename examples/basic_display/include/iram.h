@@ -7,7 +7,10 @@
 #include <wonderful.h>
 #include <ws.h>
 
-// Define IRAM_IMPLEMENTATION in only one .c file.
+// Remember to define IRAM_IMPLEMENTATION in only one .c file!
+// Defining it in zero .c files will cause missing symbols.
+// Defining it in multiple .c files will cause duplicate symbols.
+
 #ifdef IRAM_IMPLEMENTATION
 #define IRAM_EXTERN
 #else
@@ -15,7 +18,7 @@
 #endif
 
 /* IRAM LAYOUT DECLARATION START */
-/* This part is user-configurable. */
+// Everything up until "IRAM LAYOUT DECLARATION END" is user-configurable.
 
 // Reserve all tile memory in both 2BPP and 4BPP modes.
 __attribute__((section(".iramx_2bpp_2000")))

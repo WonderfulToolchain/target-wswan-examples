@@ -14,7 +14,6 @@
 #include "mono/pyramid.h"
 #include "mono/swan.h"
 
-// Define IRAM_IMPLEMENTATION in only one .c file.
 #define IRAM_IMPLEMENTATION
 #include "iram.h"
 

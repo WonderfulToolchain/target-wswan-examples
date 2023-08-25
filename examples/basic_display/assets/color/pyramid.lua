@@ -6,7 +6,6 @@ for i, file in pairs(process.inputs(".png")) do
 		file,
 		superfamiconv.config()
 			:mode("wsc"):bpp(4)
-			:color_zero("#ff00fd")
 			:tile_base(1):palette_base(0)
 	)
 	process.emit_symbol("gfx_color_" .. process.symbol(file), tilemap)
