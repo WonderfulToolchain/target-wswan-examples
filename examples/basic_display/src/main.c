@@ -69,8 +69,8 @@ void main(void) {
 		memcpy(MEM_TILE(384), gfx_mono_swan_tiles, gfx_mono_swan_tiles_size);
 
 		// Configure mono palettes.
-		outportw(IO_SCR_PAL_0, ((uint16_t __wf_rom*) gfx_mono_pyramid_palette)[0]);
-		outportw(IO_SCR_PAL_12, ((uint16_t __wf_rom*) gfx_mono_swan_palette)[0]);
+		ws_portcpy(IO_SCR_PAL_0, gfx_mono_pyramid_palette, gfx_mono_pyramid_palette_size);
+		ws_portcpy(IO_SCR_PAL_12, gfx_mono_swan_palette, gfx_mono_swan_palette_size);
 
 		// Configure mono shade LUT.
 		ws_display_set_shade_lut(SHADE_LUT_DEFAULT);
