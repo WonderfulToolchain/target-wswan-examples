@@ -14,6 +14,11 @@
 #include "mono/pyramid.h"
 #include "mono/swan.h"
 
+// Internal RAM global variables.
+//
+// The IRAM_IMPLEMENTATION should be defined in exactly one file, and precede
+// the iram.h include there. You can only provide the globals in one .c file
+// at a time - the other files can only reference them.
 #define IRAM_IMPLEMENTATION
 #include "iram.h"
 
