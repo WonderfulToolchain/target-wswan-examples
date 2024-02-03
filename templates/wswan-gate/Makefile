@@ -140,8 +140,8 @@ $(BUILDDIR)/%.bin.o $(BUILDDIR)/%_bin.h : %.bin
 $(BUILDDIR)/%.lua.o : %.lua
 	@echo "  PROCESS $<"
 	@$(MKDIR) -p $(@D)
-	$(_V)$(WF)/bin/wf-process -o $(BUILDDIR)/$*.c -t $(TARGET) --depfile $(BUILDDIR)/$*.lua.d --depfile-target $(BUILDDIR)/$*.lua.o $<
-	$(_V)$(CC) $(CFLAGS) -c -o $(BUILDDIR)/$*.lua.o $(BUILDDIR)/$*.c
+	$(_V)$(WF)/bin/wf-process -o $(BUILDDIR)/$*.s -t $(TARGET) --depfile $(BUILDDIR)/$*.lua.d --depfile-target $(BUILDDIR)/$*.lua.o $<
+	$(_V)$(CC) $(CFLAGS) -c -o $(BUILDDIR)/$*.lua.o $(BUILDDIR)/$*.s
 
 # Include dependency files if they exist
 # --------------------------------------
