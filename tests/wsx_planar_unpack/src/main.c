@@ -45,7 +45,7 @@ void main(void) {
 	outportw(IO_DISPLAY_CTRL, 0);
 
 	for (int i = 0; i < 16; i++) {
-		wsx_planar_unpack(MEM_TILE(i), 8, smiley, WSX_PLANAR_UNPACK_1BPP_TO_2BPP(i, 0));
+		wsx_planar_unpack(MEM_TILE(i), 8, smiley, WSX_PLANAR_UNPACK_1BPP_TO_2BPP((i >> 2), (i & 3)));
 	}
 	draw_smileys_on_screen(15);
 
