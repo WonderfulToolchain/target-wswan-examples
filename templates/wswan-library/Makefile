@@ -3,7 +3,11 @@
 # SPDX-FileContributor: Adrian "asie" Siekierka, 2023
 
 WONDERFUL_TOOLCHAIN ?= /opt/wonderful
-TARGET ?= wswan/medium
+
+# The list of targets to build the library for.
+TARGET ?= wswan/medium wswan/medium-sram wswan/small wswan/small-sram
+
+ifeq (1,$(words [$(TARGET)]))
 include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
 
 # Source code paths
@@ -126,3 +130,23 @@ $(BUILDDIR)/%.lua.o : %.lua
 # --------------------------------------
 
 -include $(DEPS)
+
+else
+
+# Multiple targets specified; run make for each target separately
+# ---------------------------------------------------------------
+
+.PHONY: all clean doc
+
+all: $(TARGET)
+
+$(TARGET):
+	$(MAKE) TARGET=$@
+
+clean:
+	$(foreach tgt, $(TARGET), $(MAKE) TARGET=$(tgt) clean; )
+
+doc:
+	$(MAKE) TARGET=$(firstword TARGET) doc
+
+endif
