@@ -4,8 +4,12 @@
 
 WONDERFUL_TOOLCHAIN ?= /opt/wonderful
 
-# The list of targets to build the library for.
-TARGET ?= wswan/medium wswan/medium-sram wswan/small wswan/small-sram
+# User config
+# ===========
+
+NAME		:= example
+DESTDIR		?= $(WONDERFUL_TOOLCHAIN)/local/$(NAME)
+TARGET		?= wswan/medium wswan/medium-sram wswan/small wswan/small-sram
 
 ifeq (1,$(words [$(TARGET)]))
 include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
@@ -30,9 +34,9 @@ LIBDIRS		:= $(WF_ARCH_LIBDIRS)
 # Build artifacts
 # ---------------
 
-NAME		:= example
 BUILDDIR	:= build/$(TARGET)
 ARCHIVE		:= $(BUILDDIR)/lib$(NAME).a
+INSTALLDIR	:= $(DESTDIR)/$(TARGET)
 
 # Verbose flag
 # ------------
@@ -82,7 +86,7 @@ DEPS		:= $(OBJS:.o=.d)
 # Targets
 # -------
 
-.PHONY: all clean doc
+.PHONY: all clean doc install
 
 all: $(ARCHIVE) compile_commands.json
 
@@ -105,7 +109,11 @@ doc:
 	@echo "  DOXYGEN"
 	doxygen
 
-# TODO: Write install stage.
+install: $(ARCHIVE)
+	@echo "  INSTALL  $(INSTALLDIR)"
+	$(_V)install -d $(INSTALLDIR)/lib
+	$(_V)cp -r include $(INSTALLDIR)/
+	$(_V)cp $(ARCHIVE) $(INSTALLDIR)/lib/
 
 # Rules
 # -----
@@ -136,7 +144,7 @@ else
 # Multiple targets specified; run make for each target separately
 # ---------------------------------------------------------------
 
-.PHONY: all clean doc
+.PHONY: all clean doc install
 
 all: $(TARGET)
 
@@ -148,5 +156,8 @@ clean:
 
 doc:
 	$(MAKE) TARGET=$(firstword TARGET) doc
+
+install:
+	$(foreach tgt, $(TARGET), $(MAKE) TARGET=$(tgt) install; )
 
 endif
