@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**"
             ],
             "defines": [],
-            "compilerPath": "/opt/wonderful/toolchain/gcc-ia16-elf/bin/ia16-elf-gcc",
+            "compilerPath": "${env:WONDERFUL_TOOLCHAIN}/toolchain/gcc-ia16-elf/bin/ia16-elf-gcc",
             "cStandard": "c11",
             "cppStandard": "c++14",
             "intelliSenseMode": "linux-gcc-x64",
