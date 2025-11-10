@@ -9,7 +9,7 @@ include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
 # Metadata
 # --------
 
-NAME		:= basic_display
+NAME		:= console
 
 # Source code paths
 # -----------------

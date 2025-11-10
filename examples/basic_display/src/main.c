@@ -4,6 +4,7 @@
 #include <string.h>
 #include <wonderful.h>
 #include <ws.h>
+#include <wse/memory.h>
 
 // Assets
 #include "color/pyramid.h"
@@ -11,24 +12,18 @@
 #include "mono/pyramid.h"
 #include "mono/swan.h"
 
-// Internal RAM global variables.
-//
-// The IRAM_IMPLEMENTATION should be defined in exactly one file, and precede
-// the iram.h include there. You can only provide the globals in one .c file
-// at a time - the other files can only reference them.
-#define IRAM_IMPLEMENTATION
-#include "iram.h"
-
 // Uncomment this to test the "mono" mode in emulators which do not support
 // forcing it, or on a real "color" device.
 // #define EXAMPLE_FORCE_MONO
 
+WSE_RESERVE_TILES(512, 1024);
+
 void main(void) {
 	// Disable display.
-	outportw(WS_DISPLAY_CTRL_PORT, 0);
+	ws_display_set_control(0);
 
 	// Set the screen address.
-	ws_display_set_screen_addresses(screen_1, screen_2);
+	ws_display_set_screen_addresses(&wse_screen1, &wse_screen2);
 
 	// Clear scroll registers.
 	ws_display_scroll_screen1_to(0, 0);
@@ -54,15 +49,15 @@ void main(void) {
 		ws_gdma_copy(WS_SCREEN_COLOR_MEM(12), gfx_color_swan_palette, gfx_color_swan_palette_size);
 
 		// Write tilemaps.
-		ws_screen_put_tiles(screen_1, gfx_color_pyramid_map, 0, 0, 28, 18);
-		ws_screen_put_tiles(screen_2, gfx_color_swan_map, 28 - 16 - 2, 3, 16, 15);
+		ws_screen_put_tiles(&wse_screen1, gfx_color_pyramid_map, 0, 0, 28, 18);
+		ws_screen_put_tiles(&wse_screen2, gfx_color_swan_map, 28 - 16 - 2, 3, 16, 15);
 	} else {
 		// Clear tile 0.
 		memset(WS_TILE_MEM(0), 0, sizeof(ws_display_tile_t));
 
 		// Clear screen 2.
 		// On a "mono" model, only palettes 4-7 and 12-15 are translucent.
-		ws_screen_fill_tiles(screen_2, WS_SCREEN_ATTR_PALETTE(12), 0, 0, 32, 32);
+		ws_screen_fill_tiles(&wse_screen2, WS_SCREEN_ATTR_PALETTE(12), 0, 0, 32, 32);
 
 		// Copy tiles.
 		memcpy(WS_TILE_MEM(1), gfx_mono_pyramid_tiles, gfx_mono_pyramid_tiles_size);
@@ -76,12 +71,12 @@ void main(void) {
 		ws_display_set_shade_lut(WS_DISPLAY_SHADE_LUT_DEFAULT);
 
 		// Write tilemaps.
-		ws_screen_put_tiles(screen_1, gfx_mono_pyramid_map, 0, 0, 28, 18);
-		ws_screen_put_tiles(screen_2, gfx_mono_swan_map, 28 - 16 - 2, 3, 16, 15);
+		ws_screen_put_tiles(&wse_screen1, gfx_mono_pyramid_map, 0, 0, 28, 18);
+		ws_screen_put_tiles(&wse_screen2, gfx_mono_swan_map, 28 - 16 - 2, 3, 16, 15);
 	}
 
 	// Enable display: screen 1 and screen 2.
-	outportw(WS_DISPLAY_CTRL_PORT, WS_DISPLAY_CTRL_SCR1_ENABLE | WS_DISPLAY_CTRL_SCR2_ENABLE);
+	ws_display_set_control(WS_DISPLAY_CTRL_SCR1_ENABLE | WS_DISPLAY_CTRL_SCR2_ENABLE);
 
 	// Enable the VBlank interrupt.
 	// Since this is the only interrupt enabled, "ia16_halt();" will only
