@@ -24,6 +24,7 @@ INCLUDEDIRS	:= include
 SOURCEDIRS	:= src
 ASSETDIRS	:= assets
 CBINDIRS	:= cbin
+ROM0FSDIRS	:= rom0
 
 # Defines passed to all files
 # ---------------------------
@@ -43,6 +44,7 @@ BUILDDIR	:= build
 ELF		:= build/$(NAME).elf
 MAP		:= build/$(NAME).map
 EXECUTABLE	:= $(NAME).fx
+ROM		:= $(NAME).ws
 
 # Verbose flag
 # ------------
@@ -67,6 +69,8 @@ endif
 SOURCES_S	:= $(shell find -L $(SOURCEDIRS) -name "*.s")
 SOURCES_C	:= $(shell find -L $(SOURCEDIRS) -name "*.c")
 
+ROM0FS_FILES	:= $(shell find -L $(ROM0FSDIRS) -type f)
+
 # Compiler and linker flags
 # -------------------------
 
@@ -88,6 +92,7 @@ LDFLAGS		:= -T$(WF_LDSCRIPT) \
 		   $(WF_ARCH_LDFLAGS) $(LIBS)
 
 MKFENTFLAGS	:=
+MKROMFLAGS	:= --small
 
 ifdef INFO
 MKFENTFLAGS	+= --info $(INFO)
@@ -114,7 +119,11 @@ DEPS		:= $(OBJS:.o=.d)
 
 .PHONY: all clean usage
 
-all: $(EXECUTABLE) compile_commands.json
+all: $(EXECUTABLE) $(ROM) compile_commands.json
+
+$(ROM): $(EXECUTABLE)
+	@echo "  MKROM   $@"
+	$(_V)$(MKROM) -v -o $@ $< $(ROM0FS_FILES) $(MKROMFLAGS)
 
 $(EXECUTABLE): $(ELF)
 	@echo "  MKFENT  $@"
